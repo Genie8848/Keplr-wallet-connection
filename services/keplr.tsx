@@ -21,6 +21,10 @@ export const connectKeplr = async () => {
         process.env.NEXT_PUBLIC_STAKING_DENOM || 'ujuno'
       )
 
+      const normalDenom = convertFromMicroDenom(
+        process.env.NEXT_PUBLIC_DENOM || 'ujuno'
+      )
+
       try {
         // Keplr v0.6.4 introduces an experimental feature that supports the feature to suggests the chain from a webpage.
         // cosmoshub-3 is integrated to Keplr so the code should return without errors.
@@ -56,7 +60,7 @@ export const connectKeplr = async () => {
           bip44: {
             // You can only set the coin type of BIP44.
             // 'Purpose' is fixed to 44.
-            coinType: 118,
+            coinType: 60,
           },
           // Bech32 configuration to show the address to user.
           bech32Config: {
@@ -69,6 +73,17 @@ export const connectKeplr = async () => {
           },
           // List of all coin/tokens used in this chain.
           currencies: [
+            {
+              // Coin denomination to be displayed to the user.
+              coinDenom: normalDenom,
+              // Actual denom (i.e. uatom, uscrt) used by the blockchain.
+              coinMinimalDenom: process.env.NEXT_PUBLIC_DENOM,
+              // # of decimal points to convert minimal denomination to user-facing denomination.
+              coinDecimals: 18,
+              // (Optional) Keplr can show the fiat value of the coin if a coingecko id is provided.
+              // You can get id from https://api.coingecko.com/api/v3/coins/list if it is listed.
+              // coinGeckoId: ""
+            },
             {
               // Coin denomination to be displayed to the user.
               coinDenom: stakingDenom,
@@ -85,9 +100,9 @@ export const connectKeplr = async () => {
           feeCurrencies: [
             {
               // Coin denomination to be displayed to the user.
-              coinDenom: stakingDenom,
+              coinDenom: normalDenom,
               // Actual denom (i.e. uatom, uscrt) used by the blockchain.
-              coinMinimalDenom: process.env.NEXT_PUBLIC_STAKING_DENOM,
+              coinMinimalDenom: process.env.NEXT_PUBLIC_DENOM,
               // # of decimal points to convert minimal denomination to user-facing denomination.
               coinDecimals: 18,
               // (Optional) Keplr can show the fiat value of the coin if a coingecko id is provided.
@@ -100,17 +115,17 @@ export const connectKeplr = async () => {
           // Ideally, it is recommended to be the same with BIP44 path's coin type.
           // However, some early chains may choose to use the Cosmos Hub BIP44 path of '118'.
           // So, this is separated to support such chains.
-          coinType: 118,
+          coinType: 60,
           // (Optional) This is used to set the fee of the transaction.
           // If this field is not provided, Keplr extension will set the default gas price as (low: 0.01, average: 0.025, high: 0.04).
           // Currently, Keplr doesn't support dynamic calculation of the gas prices based on on-chain data.
           // Make sure that the gas prices are higher than the minimum gas prices accepted by chain validators and RPC/REST endpoint.
           gasPriceStep: {
-            low: 10000000000,
-            average: 25000000000,
-            high: 40000000000,
+            low: 1000000000000000,
+            average: 2500000000000000,
+            high: 4000000000000000,
           },
-          features: ["eth-address-gen", "eth-key-sign"]
+          features: ["eth-address-gen", "eth-key-sign","cosmwasm"]
         })
       } catch {
         alert('Failed to suggest the chain')
